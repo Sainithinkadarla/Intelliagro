@@ -6,6 +6,11 @@ import urequests
 import WaterFlow as wf
 
 
+# def drip(duration):
+#     #is_water_sufficient()
+#     #timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))
+#     pass
+
 timer = machine.Timer(0)
 # replace with your own WiFi network details
 WIFI_SSID = "moto g(60)_ssk"
@@ -87,23 +92,20 @@ def soil_moisture_check(moist):
         return 1
 
 
-# def drip(duration):
-#     #is_water_sufficient()
-#     #timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))
-#     pass
+
 
 def watering(sm):
         sm_check= soil_moisture_check(sm)
         #water_check= is_water_sufficient()
 
         if  read_rain():
-            #is_water_sufficient() ***
-            #timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))***
-            #drip(watering_time_sm*sm_check)
+            is_water_sufficient() #***
+            timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))#***
+#             drip(watering_time_sm*sm_check)
         else:
-            #is_water_sufficient()***
-            #timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))***
-            #drip(watering_time_sm*sm_check)
+            is_water_sufficient()#***
+            timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))#***
+#             drip(watering_time_sm*sm_check)
 
 def pipe_health_check(start, end):
     normal_start=10
@@ -111,16 +113,16 @@ def pipe_health_check(start, end):
     if start >=(normal_start*0.75) and  start<normal_start:
         print("pipe entry is good")
     if start >=(normal_start*0.5) and  start<(normal_start*0.75):
-        print("pipe entry is good")
+        print("pipe entry may be cleaned")
     if start >=(normal_start*0.25) and  start<(normal_start*0.5):
-        print("check ")
+        print("Drip is going to turn off","\n","check entry of pipe")
         
     if end >=(normal_end*0.75) and  end<normal_end:
-        print("pipe end is good")
+        print("pipe exit is good")
     if end >=(normal_end*0.5) and  end<(normal_end*0.75):
-        print("pipe end is good")
+        print("pipe exit may be cleaned")
     if end >=(normal_end*0.25) and  end<(normal_end*0.5):
-        print("pipe end is good")
+        print("Drip is going to turn off","\n","please check exit of pipe")
 
     
 while True:
@@ -130,7 +132,9 @@ while True:
     
     
     watering(moisture_percentage)
-    time.sleep(2*60)
+    time.sleep(2*60)#2mins sleep
+    
+    #----------------------pipe health checking code------------------------
     wf1=wf.measure_flow(wf1_pin)
     wf2=wf.measure_flow(wf2_pin)
     pipe_health_check(wf1[1], wf2[1])
