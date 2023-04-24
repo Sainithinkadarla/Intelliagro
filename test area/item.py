@@ -28,7 +28,7 @@ wf1_pin =32
 wf2_pin =13
 
 #pin connected to waterpump
-pump=Pin(14, Pin.OUT)
+pump=machine.Pin(14, machine.Pin.OUT)
 # read the soil moisture sensor and convert the raw value to percentage
 def read_soil_moisture():
     adc = machine.ADC(machine.Pin(SOIL_MOISTURE_SENSOR_PIN))
