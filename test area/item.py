@@ -1,11 +1,12 @@
-import machine
+import machine, dht
 import time
 import math
 import network
 import urequests
-import WaterFlow as wf
+import WF as wf
+from machine import Pin
 
-
+d = dht.DHT11(Pin(16, Pin.IN))
 # def drip(duration):
 #     #is_water_sufficient()
 #     #timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))
@@ -24,8 +25,10 @@ THINGSPEAK_CHANNEL_ID = "1712553"
 SOIL_MOISTURE_SENSOR_PIN = 32
 
 #pins connected to water flow sensors
-wf1_pin =32
-wf2_pin =13
+wf1_pin =13
+wf2_pin =14
+
+
 
 #pin connected to waterpump
 pump=machine.Pin(14, machine.Pin.OUT)
@@ -59,9 +62,9 @@ def send_to_thingspeak(field1):
 #---------------------------------------------------------------------------------------------------
 def read_rain():
     # define the pin number where the rain sensor is connected
-    rain_sensor_pin = 13
+    rain_sensor_pin = 15
     # create a pin object for the rain sensor pin
-    rain_sensor = Pin(rain_sensor_pin, Pin.IN)
+    rain_sensor = machine.Pin(rain_sensor_pin, Pin.IN)
     # read the state of the rain sensor pin
     is_raining = rain_sensor.value()
     if is_raining:
@@ -99,12 +102,12 @@ def watering(sm):
         #water_check= is_water_sufficient()
 
         if  read_rain():
-            is_water_sufficient() #***
-            timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))#***
+            #is_water_sufficient() #***
+            timer.init(period=1000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))#***
 #             drip(watering_time_sm*sm_check)
         else:
-            is_water_sufficient()#***
-            timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))#***
+            #is_water_sufficient()#***
+            timer.init(period=1000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))#***
 #             drip(watering_time_sm*sm_check)
 
 def pipe_health_check(start, end):
@@ -124,21 +127,26 @@ def pipe_health_check(start, end):
     elif end >=(normal_end*0.25) and  end<(normal_end*0.5):
         print("Drip is going to turn off","\n","please check exit of pipe")
 
-    
+connect_wifi()
 while True:
     moisture_percentage = read_soil_moisture()
     print("Soil moisture:", moisture_percentage, "%")
     send_to_thingspeak(moisture_percentage)
     
+    print("Temperature: ",d.temperature())
+    print("Humidity: ",d.humidity())
     
     watering(moisture_percentage)
-    time.sleep(2*60)#2mins sleep
+    time.sleep(2)#2mins sleep
     
     #----------------------pipe health checking code------------------------
-    wf1=wf.measure_flow(wf1_pin)
-    wf2=wf.measure_flow(wf2_pin)
-    pipe_health_check(wf1[1], wf2[1])
+    
+    wf1=wf.measure_flow(13)
+    
+    wf2=wf.measure_flow(14)
+    pipe_health_check(wf1,wf2)
     
     
     
     
+
