@@ -84,11 +84,11 @@ watering_time_sm = 10*60*60*100
 def soil_moisture_check(moist):
     if moist >= 75 and moist <100: #75 - 100
         return 0 
-    else if moist >= 50 and moist <75:
+    elif moist >= 50 and moist <75:
         return 0.25
-    else if moist >= 35 and moist <50:
+    elif moist >= 35 and moist <50:
         return 0.5
-    else if moist >=0 and moist<35:
+    elif moist >=0 and moist<35:
         return 1
 
 
@@ -112,16 +112,16 @@ def pipe_health_check(start, end):
     normal_end=8
     if start >=(normal_start*0.75) and  start<normal_start:
         print("pipe entry is good")
-    if start >=(normal_start*0.5) and  start<(normal_start*0.75):
+    elif start >=(normal_start*0.5) and  start<(normal_start*0.75):
         print("pipe entry may be cleaned")
-    if start >=(normal_start*0.25) and  start<(normal_start*0.5):
+    elif start >=(normal_start*0.25) and  start<(normal_start*0.5):
         print("Drip is going to turn off","\n","check entry of pipe")
         
     if end >=(normal_end*0.75) and  end<normal_end:
         print("pipe exit is good")
-    if end >=(normal_end*0.5) and  end<(normal_end*0.75):
+    elif end >=(normal_end*0.5) and  end<(normal_end*0.75):
         print("pipe exit may be cleaned")
-    if end >=(normal_end*0.25) and  end<(normal_end*0.5):
+    elif end >=(normal_end*0.25) and  end<(normal_end*0.5):
         print("Drip is going to turn off","\n","please check exit of pipe")
 
     
