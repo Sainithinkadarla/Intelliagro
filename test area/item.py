@@ -22,7 +22,7 @@ THINGSPEAK_API_KEY = "ZBXQK4LPTM5QUQ2T"
 THINGSPEAK_CHANNEL_ID = "1712553"
 
 # pin connected to the soil moisture sensor
-SOIL_MOISTURE_SENSOR_PIN = 32
+sm1 = 32
 
 #pins connected to water flow sensors
 wf1_pin =13
@@ -33,7 +33,7 @@ wf2_pin =14
 #pin connected to waterpump
 pump=machine.Pin(14, machine.Pin.OUT)
 # read the soil moisture sensor and convert the raw value to percentage
-def read_soil_moisture():
+def read_soil_moisture(SOIL_MOISTURE_SENSOR_PIN):
     adc = machine.ADC(machine.Pin(SOIL_MOISTURE_SENSOR_PIN))
     raw_value = adc.read()
     voltage = raw_value / 4095 * 3.3
@@ -129,7 +129,7 @@ def pipe_health_check(start, end):
 
 connect_wifi()
 while True:
-    moisture_percentage = read_soil_moisture()
+    moisture_percentage = read_soil_moisture(sm1)
     print("Soil moisture:", moisture_percentage, "%")
     send_to_thingspeak(moisture_percentage)
     
