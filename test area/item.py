@@ -23,6 +23,7 @@ THINGSPEAK_CHANNEL_ID = "1712553"
 
 # pin connected to the soil moisture sensor
 sm1 = 32
+sm2 = 34
 
 #pins connected to water flow sensors
 wf1_pin =13
@@ -32,6 +33,8 @@ wf2_pin =14
 
 #pin connected to waterpump
 pump=machine.Pin(14, machine.Pin.OUT)
+
+
 # read the soil moisture sensor and convert the raw value to percentage
 def read_soil_moisture(SOIL_MOISTURE_SENSOR_PIN):
     adc = machine.ADC(machine.Pin(SOIL_MOISTURE_SENSOR_PIN))
@@ -52,9 +55,9 @@ def connect_wifi():
     print("Connected to WiFi:", sta_if.ifconfig())
 
 # send data to ThingSpeak
-def send_to_thingspeak(field1):
+def send_to_thingspeak(field1,field12,field3,field4):
     url = "https://api.thingspeak.com/update"
-    data = {"api_key": THINGSPEAK_API_KEY, "field1": field1}
+    data = {"api_key": THINGSPEAK_API_KEY, "field1": field1, "field2": field2, "field3": field3, "field4": field4}
     response = urequests.post(url, json=data)
     response.close()
     
@@ -97,8 +100,9 @@ def soil_moisture_check(moist):
 
 
 
-def watering(sm):
-        sm_check= soil_moisture_check(sm)
+def watering(sm_data1, sm_data2):
+        sm_check= soil_moisture_check(sm_data1)
+        sm_check= soil_moisture_check(sm_data2)
         #water_check= is_water_sufficient()
 
         if  read_rain():
@@ -127,26 +131,32 @@ def pipe_health_check(start, end):
     elif end >=(normal_end*0.25) and  end<(normal_end*0.5):
         print("Drip is going to turn off","\n","please check exit of pipe")
 
-connect_wifi()
+#connect_wifi()
 while True:
-    moisture_percentage = read_soil_moisture(sm1)
-    print("Soil moisture:", moisture_percentage, "%")
-    send_to_thingspeak(moisture_percentage)
+    sm1_percentage = read_soil_moisture(sm1)
+    sm2_percentage = read_soil_moisture(sm2)
+    print("Soil moisture:", sm1_percentage, "%")
+    print("Soil moisture:", sm2_percentage, "%")
+    
+    wf1=wf.measure_flow(13)
+    wf2=wf.measure_flow(14)
+    
     
     print("Temperature: ",d.temperature())
     print("Humidity: ",d.humidity())
+
+    send_to_thingspeak(sm1_percentage, sm2_percentage, wf1, wf2)
+
     
-    watering(moisture_percentage)
+    watering(sm1_percentage,sm2_percentage)
     time.sleep(2)#2mins sleep
     
     #----------------------pipe health checking code------------------------
     
-    wf1=wf.measure_flow(13)
-    
-    wf2=wf.measure_flow(14)
     pipe_health_check(wf1,wf2)
     
     
     
     
+
 
