@@ -22,19 +22,20 @@ THINGSPEAK_API_KEY = "ZBXQK4LPTM5QUQ2T"
 THINGSPEAK_CHANNEL_ID = "1712553"
 
 # pin connected to the soil moisture sensor
-sm1 = 32
-sm2 = 34
+sm1 =13 
+sm2 =12
 
 #pins connected to water flow sensors
-wf1_pin =13
-wf2_pin =14
+wf1_pin =14
+wf2_pin =27
 
+buzzer =machine.Pin(32, machine.Pin.OUT)
 
-
+pump.value(0)
 #pin connected to waterpump
-pump=machine.Pin(14, machine.Pin.OUT)
+pump=machine.Pin(33, machine.Pin.OUT)
 
-
+pump.value(1)
 # read the soil moisture sensor and convert the raw value to percentage
 def read_soil_moisture(SOIL_MOISTURE_SENSOR_PIN):
     adc = machine.ADC(machine.Pin(SOIL_MOISTURE_SENSOR_PIN))
@@ -107,12 +108,14 @@ def watering(sm_data1, sm_data2):
 
         if  read_rain():
             #is_water_sufficient() #***
-            timer.init(period=1000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))#***
+            timer.init(period=1000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(1))#***
 #             drip(watering_time_sm*sm_check)
         else:
             #is_water_sufficient()#***
-            timer.init(period=1000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))#***
+            timer.init(period=1000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(1))#***
 #             drip(watering_time_sm*sm_check)
+
+
 
 def pipe_health_check(start, end):
     normal_start=10
@@ -135,8 +138,8 @@ def pipe_health_check(start, end):
 while True:
     sm1_percentage = read_soil_moisture(sm1)
     sm2_percentage = read_soil_moisture(sm2)
-    print("Soil moisture:", sm1_percentage, "%")
-    print("Soil moisture:", sm2_percentage, "%")
+    print("Soil moisture of field1:", sm1_percentage, "%")
+    print("Soil moisture of field2:", sm2_percentage, "%")
     
     wf1=wf.measure_flow(13)
     wf2=wf.measure_flow(14)
