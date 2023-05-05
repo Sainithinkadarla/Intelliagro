@@ -31,10 +31,9 @@ wf2_pin =27
 
 buzzer =machine.Pin(32, machine.Pin.OUT)
 
-pump.value(0)
 #pin connected to waterpump
 pump=machine.Pin(33, machine.Pin.OUT)
-
+pump.value(0)
 pump.value(1)
 # read the soil moisture sensor and convert the raw value to percentage
 def read_soil_moisture(SOIL_MOISTURE_SENSOR_PIN):
@@ -56,7 +55,7 @@ def connect_wifi():
     print("Connected to WiFi:", sta_if.ifconfig())
 
 # send data to ThingSpeak
-def send_to_thingspeak(field1,field12,field3,field4):
+def send_to_thingspeak(field1,field2,field3,field4):
     url = "https://api.thingspeak.com/update"
     data = {"api_key": THINGSPEAK_API_KEY, "field1": field1, "field2": field2, "field3": field3, "field4": field4}
     response = urequests.post(url, json=data)
@@ -90,49 +89,50 @@ watering_time_sm = 10*60*60*100
 
 def soil_moisture_check(moist):
     if moist >= 75 and moist <100: #75 - 100
-        return 0 
+        return float(0) 
     elif moist >= 50 and moist <75:
-        return 0.25
+        return float(0.25)
     elif moist >= 35 and moist <50:
-        return 0.5
+        return float(0.5)
     elif moist >=0 and moist<35:
-        return 1
+        return float(1)
 
 
 
 
 def watering(sm_data1, sm_data2):
-        sm_check= soil_moisture_check(sm_data1)
-        sm_check= soil_moisture_check(sm_data2)
+        sm1_check= soil_moisture_check(sm_data1)
+        sm2_check= soil_moisture_check(sm_data2)
         #water_check= is_water_sufficient()
-
-        if  read_rain():
+        if (sm1_check <= sm2_check+5) or (sm1_check <=sm2_check-5):
+            if  read_rain():
             #is_water_sufficient() #***
-            timer.init(period=1000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(1))#***
-#             drip(watering_time_sm*sm_check)
-        else:
+                timer.init(period=2000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(1))#***
+                print("ncnskjdcnbdsb")
+            #             drip(watering_time_sm*sm_check)
+            else:
             #is_water_sufficient()#***
-            timer.init(period=1000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(1))#***
-#             drip(watering_time_sm*sm_check)
+                timer.init(period=2000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(1))#***
+            #             drip(watering_time_sm*sm_check)
+        
+    
+
+        
 
 
 
 def pipe_health_check(start, end):
-    normal_start=10
-    normal_end=8
-    if start >=(normal_start*0.75) and  start<normal_start:
+    normal_start=11.20
+    normal_end=10.20
+    if start >=11.20 and  start<11.80:
         print("pipe entry is good")
-    elif start >=(normal_start*0.5) and  start<(normal_start*0.75):
-        print("pipe entry may be cleaned")
-    elif start >=(normal_start*0.25) and  start<(normal_start*0.5):
+    else:
         print("Drip is going to turn off","\n","check entry of pipe")
         
-    if end >=(normal_end*0.75) and  end<normal_end:
-        print("pipe exit is good")
-    elif end >=(normal_end*0.5) and  end<(normal_end*0.75):
-        print("pipe exit may be cleaned")
-    elif end >=(normal_end*0.25) and  end<(normal_end*0.5):
-        print("Drip is going to turn off","\n","please check exit of pipe")
+    if end >=10.20 and  end<11.05:
+        print("exit pipe is good")
+    else:
+        print("Drip is going to turn off","\n","please check exit pipe")
 
 #connect_wifi()
 while True:
@@ -148,7 +148,6 @@ while True:
     print("Temperature: ",d.temperature())
     print("Humidity: ",d.humidity())
 
-    send_to_thingspeak(sm1_percentage, sm2_percentage, wf1, wf2)
 
     
     watering(sm1_percentage,sm2_percentage)
@@ -157,9 +156,11 @@ while True:
     #----------------------pipe health checking code------------------------
     
     pipe_health_check(wf1,wf2)
+    #send_to_thingspeak(sm1_percentage, sm2_percentage, wf1, wf2)
     
     
     
     
+
 
 
