@@ -1,16 +1,29 @@
-import machine, dht
+import machine,dht
 import time
 import math
 import network
 import urequests
 import WF as wf
 from machine import Pin
+import utime
 
-d = dht.DHT11(Pin(16, Pin.IN))
+d = dht.DHT11(Pin(25, Pin.IN))
 # def drip(duration):
 #     #is_water_sufficient()
 #     #timer.init(period=watering_time_sm*sm_check , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(not pump.value()))
 #     pass
+
+# Define the pin number for the piezo buzzer
+BUZZER_PIN = 32
+
+# Define the frequency of the sound to produce
+SOUND_FREQ = 15000
+
+# Define the duration of each sound pulse in milliseconds
+SOUND_DURATION = 500
+
+# Create a machine object for the piezo buzzer
+buzzer = machine.Pin(BUZZER_PIN, machine.Pin.OUT)
 
 timer = machine.Timer(0)
 # replace with your own WiFi network details
@@ -29,7 +42,6 @@ sm2 =12
 wf1_pin =14
 wf2_pin =27
 
-buzzer =machine.Pin(32, machine.Pin.OUT)
 
 #pin connected to waterpump
 pump=machine.Pin(33, machine.Pin.OUT)
@@ -74,7 +86,8 @@ def read_rain():
         return False
     else:
         return True
-
+sm1_check=0.0
+sm2_check=0.0
 #         
 # Tdt = 30 -5 #assume that 30cm  of tank is present (Total distance of tank) 
 # 
@@ -85,26 +98,31 @@ def read_rain():
 #     else:
 #         return True
     
-watering_time_sm = 10*60*60*100
+#watering_time_sm = 10*60*60*100
 
 def soil_moisture_check(moist):
     if moist >= 75 and moist <100: #75 - 100
-        return float(0) 
+        sm1_check = 0
+        sm2_check = 0
     elif moist >= 50 and moist <75:
-        return float(0.25)
+        sm1_check = 0.25
+        sm2_check = 0.25
     elif moist >= 35 and moist <50:
-        return float(0.5)
+        sm1_check = 0.50
+        sm2_check = 0.50
     elif moist >=0 and moist<35:
-        return float(1)
+        sm1_check = 1
+        sm2_check = 1
 
 
 
 
 def watering(sm_data1, sm_data2):
-        sm1_check= soil_moisture_check(sm_data1)
-        sm2_check= soil_moisture_check(sm_data2)
+        global sm1_check
+        global sm2_check
+        
         #water_check= is_water_sufficient()
-        if (sm1_check <= sm2_check+5) or (sm1_check <=sm2_check-5):
+        if (sm1_check <= sm2_check+5) or (sm1_check <= sm2_check-5):
             if  read_rain():
             #is_water_sufficient() #***
                 timer.init(period=2000 , mode=machine.Timer.PERIODIC, callback= lambda t: pump.value(1))#***
@@ -133,6 +151,12 @@ def pipe_health_check(start, end):
         print("exit pipe is good")
     else:
         print("Drip is going to turn off","\n","please check exit pipe")
+    
+def sound_pulse():
+    # Generate a square wave at the specified frequency for the specified duration
+    buzzer.on()
+    utime.sleep_ms(SOUND_DURATION)
+    buzzer.off()
 
 #connect_wifi()
 while True:
@@ -157,10 +181,13 @@ while True:
     
     pipe_health_check(wf1,wf2)
     #send_to_thingspeak(sm1_percentage, sm2_percentage, wf1, wf2)
+    sound_pulse()
+    utime.sleep(1 / SOUND_FREQ)
     
     
     
     
+
 
 
 

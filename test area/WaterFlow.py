@@ -1,7 +1,7 @@
 from machine import Pin
 import time
 
-flow_sensor_pin = Pin(13, Pin.IN)
+flow_sensor_pin = Pin(14, Pin.IN)
 total_water = 0
 flow_rate = 0
 last_time = 0
